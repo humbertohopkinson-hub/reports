@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Corporativo Dinámico — Google Sheets API</title>
+    
+    <!-- Fuentes de Google: Inter para una tipografía limpia y ejecutiva -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome para Iconografía Moderna -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js para Reportería y Gráficos Dinámicos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* ==========================================
+           1. VARIABLES DE DISEÑO (CSS CUSTOM PROPERTIES)
+           ========================================== */
+        :root {
+            --bg-principal: #f8fafc;
+            --bg-card: #ffffff;
+            --texto-primario: #0f172a;
+            --texto-secundario: #475569;
+            --color-accent: #2563eb;
+            --color-accent-hover: #1d4ed8;
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --borde: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Base Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-principal);
+            color: var(--texto-primario);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Layout Structure */
+        header {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--borde);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .brand h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--texto-primario);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .brand p {
+            font-size: 0.875rem;
+            color: var(--texto-secundario);
+        }
+
+        .refresh-badge {
+            background-color: #f1f5f9;
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            font-size: 0.813rem;
+            font-weight: 500;
+            color: var(--texto-secundario);
+            border: 1px solid var(--borde);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .refresh-badge i {
+            color: var(--color-success);
+        }
+
+        main {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* ==========================================
+           2. COMPONENTES: SECCIÓN DE MÉTRICAS (KPIs)
+           ========================================== */
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .kpi-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--borde);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition);
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .kpi-info h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--texto-secundario);
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--texto-primario);
+        }
+
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #eff6ff;
+            color: var(--color-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        /* ==========================================
+           3. SECCIÓN DE CONTROLES: FILTROS Y BÚSQUEDA
+           ========================================== */
+        .controls-panel {
+            background-color: var(--bg-card);
+            border: 1px solid var(--borde);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--texto-secundario);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.7rem;
+            border: 1px solid var(--borde);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.938rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-box input:focus {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .filter-groups {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 0.75rem 2rem 0.75rem 1rem;
+            border: 1px solid var(--borde);
+            border-radius: 8px;
+            background-color: var(--bg-card);
+            font-family: inherit;
+            font-size: 0.938rem;
+            color: var(--texto-secundario);
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+            min-width: 180px;
+        }
+
+        /* Layout Analítico de Dos Columnas */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ==========================================
+           4. VISUALIZACIONES: CONTENEDOR DINÁMICO (TARJETAS)
+           ========================================== */
+        .items-view-section {
+            background-color: transparent;
+        }
+
+        .dynamic-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .data-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--borde);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .data-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-image-wrapper {
+            width: 100%;
+            height: 200px;
+            background-color: #f1f5f9;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .data-card:hover .card-image-wrapper img {
+            transform: scale(1.05);
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: rgba(15, 23, 42, 0.85);
+            color: #fff;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .card-category {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--color-accent);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--texto-primario);
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .card-description {
+            font-size: 0.875rem;
+            color: var(--texto-secundario);
+            margin-bottom: 1.25rem;
+            flex-grow: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-meta-list {
+            border-top: 1px solid var(--borde);
+            padding-top: 1rem;
+            margin-top: auto;
+        }
+
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.813rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-label {
+            color: var(--texto-secundario);
+            font-weight: 500;
+        }
+
+        .meta-value {
+            color: var(--texto-primario);
+            font-weight: 600;
+        }
+
+        /* Panel de Analítica e Insights Lateral */
+        .analytics-panel {
+            background-color: var(--bg-card);
+            border: 1px solid var(--borde);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .analytics-panel h2 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* ==========================================
+           5. ESTADOS DE CARGA (LOADING) Y EXCEPCIONES
+           ========================================== */
+        .loading-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 5rem 2rem;
+            color: var(--texto-secundario);
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--borde);
+            border-top-color: var(--color-accent);
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem 2rem;
+            background-color: var(--bg-card);
+            border: 1px dashed var(--borde);
+            border-radius: var(--radius);
+            color: var(--texto-secundario);
+        }
+
+        .no-results i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Encabezado de la Aplicación -->
+    <header>
+        <div class="header-container">
+            <div class="brand">
+                <h1><i class="fa-solid fa-chart-network"></i> Datahub Conectado</h1>
+                <p>Sincronización en tiempo real desde Google Sheets mediante Fetch API</p>
+            </div>
+            <div class="refresh-badge" id="syncStatus">
+                <i class="fa-solid fa-circle-check"></i> Conectado en tiempo real
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Fila de Indicadores KPI Dinámicos -->
+        <section class="kpi-container" id="kpiContainer">
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h3>Registros Totales</h3>
+                    <div class="kpi-value" id="kpiTotal">-</div>
+                </div>
+                <div class="kpi-icon"><i class="fa-solid fa-database"></i></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h3>Categorías Únicas</h3>
+                    <div class="kpi-value" id="kpiCategories">-</div>
+                </div>
+                <div class="kpi-icon"><i class="fa-solid fa-tags"></i></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h3>Última Actualización</h3>
+                    <div class="kpi-value" id="kpiUpdate" style="font-size: 1.1rem; white-space: nowrap;">Hoy</div>
+                </div>
+                <div class="kpi-icon"><i class="fa-solid fa-clock"></i></div>
+            </div>
+        </section>
+
+        <!-- Barra Superior de Herramientas, Filtros y Búsqueda -->
+        <section class="controls-panel">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Buscar en todos los campos del Sheet...">
+            </div>
+            <div class="filter-groups">
+                <select id="categoryFilter" class="filter-select">
+                    <option value="all">Todas las Categorías</option>
+                </select>
+                <select id="sortFilter" class="filter-select">
+                    <option value="default">Orden por defecto</option>
+                    <option value="asc">Título (A-Z)</option>
+                    <option value="desc">Título (Z-A)</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Contenedor Principal en Cuadrícula Receptiva -->
+        <section class="dashboard-grid">
+            
+            <!-- Bloque de Visualización de Elementos Dinámicos -->
+            <div class="items-view-section">
+                <div class="dynamic-cards-grid" id="cardsGrid">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Consumiendo origen de datos y estructurando elementos dinámicos...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Lateral Analítico Inteligente -->
+            <aside class="analytics-panel">
+                <h2><i class="fa-solid fa-chart-pie"></i> Distribución de Datos</h2>
+                <div style="position: relative; width: 100%; height: 260px;">
+                    <canvas id="analyticsChart"></canvas>
+                </div>
+            </aside>
+            
+        </section>
+    </main>
+
+    <!-- ==========================================
+       6. CORE JAVASCRIPT: CONSUMO ASÍNCRONO Y RENDERS
+       ========================================== -->
+    <script>
+        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9EiYknI1vKPo5Jo82UsVQ9CAXJuQrefJvn32Oi8nW2pzUmVGs06SYWPCjSqP4p95PMUM3vkgwVVbA/pub?gid=1886275675&single=true&output=csv";
+
+        let rawDataset = [];
+        let mappedDataset = [];
+        let distributionChart = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchSpreadsheetData();
+            setupEventListeners();
+        });
+
+        async function fetchSpreadsheetData() {
+            try {
+                const response = await fetch(SHEET_CSV_URL);
+                if (!response.ok) throw new Error("Error de red al intentar descargar el CSV de Google Sheets.");
+                
+                const csvText = await response.text();
+                parseCSVToJSON(csvText);
+            } catch (error) {
+                console.error("Fallo crítico en Fetch:", error);
+                document.getElementById("cardsGrid").innerHTML = `
+                    <div class="no-results">
+                        <i class="fa-solid fa-circle-exclamation" style="color: #ef4444;"></i>
+                        <h3>Error de Comunicación</h3>
+                        <p>No se pudo recuperar la información del Google Sheet de manera directa. Verifica que el archivo siga publicado en la web corporativa.</p>
+                    </div>`;
+            }
+        }
+
+        function parseCSVToJSON(csvText) {
+            const lines = csvText.split(/\r?\n/);
+            if (lines.length === 0 || lines[0].trim() === "") return;
+
+            const headers = parseCSVLine(lines[0]).map(h => h.trim());
+            const items = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === "") continue;
+                const columns = parseCSVLine(lines[i]);
+                
+                if (columns.length >= headers.length) {
+                    const rowObject = {};
+                    headers.forEach((header, index) => {
+                        rowObject[header] = columns[index] ? columns[index].trim() : "";
+                    });
+                    items.push(rowObject);
+                }
+            }
+
+            rawDataset = items;
+            normalizeDataset(headers);
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        function normalizeDataset(headers) {
+            const findKey = (patterns) => {
+                return headers.find(h => patterns.some(p => h.toLowerCase().includes(p))) || null;
+            };
+
+            const keys = {
+                title: findKey(['titulo', 'title', 'nombre', 'name', 'producto', 'item']),
+                desc: findKey(['descripcion', 'description', 'detalle', 'summary', 'info']),
+                category: findKey(['categoria', 'category', 'tipo', 'group', 'seccion']),
+                image: findKey(['imagen', 'image', 'foto', 'pic', 'url']),
+                badge: findKey(['estado', 'status', 'disponibilidad', 'badge', 'destacado'])
+            };
+
+            mappedDataset = rawDataset.map((row, idx) => {
+                const extraMetadata = {};
+                headers.forEach(h => {
+                    if (!Object.values(keys).includes(h)) {
+                        extraMetadata[h] = row[h];
+                    }
+                });
+
+                return {
+                    id: idx,
+                    title: keys.title ? row[keys.title] : `Elemento #${idx + 1}`,
+                    description: keys.desc ? row[keys.desc] : (headers[1] ? row[headers[1]] : 'Sin descripción provista.'),
+                    category: keys.category ? row[keys.category] : 'General',
+                    image: keys.image && row[keys.image].startsWith('http') ? row[keys.image] : null,
+                    badge: keys.badge ? row[keys.badge] : null,
+                    metadata: extraMetadata
+                };
+            });
+
+            populateCategoryFilter();
+            updateKPIs();
+            filterAndRenderUI();
+        }
+
+        function populateCategoryFilter() {
+            const categories = [...new Set(mappedDataset.map(item => item.category))];
+            const filterSelect = document.getElementById("categoryFilter");
+            
+            filterSelect.innerHTML = '<option value="all">Todas las Categorías</option>';
+            categories.forEach(cat => {
+                if(cat) {
+                    const opt = document.createElement("option");
+                    opt.value = cat;
+                    opt.textContent = cat;
+                    filterSelect.appendChild(opt);
+                }
+            });
+        }
+
+        function updateKPIs() {
+            document.getElementById("kpiTotal").textContent = mappedDataset.length;
+            const categoryCount = [...new Set(mappedDataset.map(item => item.category))].length;
+            document.getElementById("kpiCategories").textContent = categoryCount;
+            
+            const now = new Date();
+            document.getElementById("kpiUpdate").textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        function renderDistributionChart(filteredData) {
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+            
+            const counts = {};
+            filteredData.forEach(item => {
+                counts[item.category] = (counts[item.category] || 0) + 1;
+            });
+
+            const labels = Object.keys(counts);
+            const dataValues = Object.values(counts);
+
+            if (distributionChart) {
+                distributionChart.destroy();
+            }
+
+            if(labels.length === 0) return;
+
+            distributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataValues,
+                        backgroundColor: [
+                            '#2563eb', '#10b981', '#f59e0b', '#7c3aed', 
+                            '#ec4899', '#06b6d4', '#64748b'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                font: { family: "'Inter', sans-serif", size: 11 }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        function setupEventListeners() {
+            document.getElementById("searchInput").addEventListener("input", filterAndRenderUI);
+            document.getElementById("categoryFilter").addEventListener("change", filterAndRenderUI);
+            document.getElementById("sortFilter").addEventListener("change", filterAndRenderUI);
+        }
+
+        function filterAndRenderUI() {
+            const searchValue = document.getElementById("searchInput").value.toLowerCase();
+            const categoryValue = document.getElementById("categoryFilter").value;
+            const sortValue = document.getElementById("sortFilter").value;
+
+            let filtered = mappedDataset.filter(item => {
+                const matchesCategory = (categoryValue === "all" || item.category === categoryValue);
+                const matchesSearch = item.title.toLowerCase().includes(searchValue) || 
+                                      item.description.toLowerCase().includes(searchValue) ||
+                                      Object.values(item.metadata).some(val => String(val).toLowerCase().includes(searchValue));
+                
+                return matchesCategory && matchesSearch;
+            });
+
+            if (sortValue === "asc") {
+                filtered.sort((a, b) => a.title.localeCompare(b.title));
+            } else if (sortValue === "desc") {
+                filtered.sort((a, b) => b.title.localeCompare(a.title));
+            }
+
+            const container = document.getElementById("cardsGrid");
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <h3>Sin coincidencias</h3>
+                        <p>No encontramos registros que coincidan con los criterios aplicados.</p>
+                    </div>`;
+                renderDistributionChart([]);
+                return;
+            }
+
+            container.innerHTML = "";
+            filtered.forEach(item => {
+                const card = document.createElement("div");
+                card.className = "data-card";
+
+                let metadataHTML = "";
+                for (const [key, val] of Object.entries(item.metadata)) {
+                    if (val && val !== "") {
+                        metadataHTML += `
+                            <div class="meta-item">
+                                <span class="meta-label">${key}:</span>
+                                <span class="meta-value">${val}</span>
+                            </div>`;
+                    }
+                }
+
+                const imageSection = item.image 
+                    ? `<div class="card-image-wrapper"><img src="${item.image}" alt="${item.title}" onerror="this.src='https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=600&auto=format&fit=crop&q=60'"></div>`
+                    : `<div class="card-image-wrapper" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); color: var(--color-accent); font-size: 3rem;"><i class="fa-solid fa-file-spreadsheet"></i></div>`;
+
+                const badgeHTML = item.badge ? `<span class="card-badge">${item.badge}</span>` : "";
+
+                card.innerHTML = `
+                    ${imageSection}
+                    ${badgeHTML}
+                    <div class="card-body">
+                        <span class="card-category">${item.category}</span>
+                        <h2 class="card-title">${item.title}</h2>
+                        <p class="card-description">${item.description}</p>
+                        ${metadataHTML !== "" ? `<div class="card-meta-list">${metadataHTML}</div>` : ""}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            renderDistributionChart(filtered);
+        }
+    </script>
+</body>
+</html>
