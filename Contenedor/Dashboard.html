@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de control Para Help Desk</title>
+    
+    <!-- Fuentes de Google: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome para Iconografía -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* =========================================================
+           VARIABLES GLOBALES - PALETA CORPORATIVA (AZUL, BLANCO, GRIS)
+           ========================================================= */
+        :root {
+            --color-primario: #1d4ed8;       /* Azul corporativo fuerte */
+            --color-secundario: #3b82f6;     /* Azul medio */
+            --color-acento: #ffffff;         /* Blanco */
+            
+            --bg-body: #f1f5f9;              /* Gris muy claro (Pizarra) */
+            --bg-sidebar: #0f172a;           /* Gris oscuro azulado */
+            --bg-card: #ffffff;
+            
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --text-light: #f8fafc;
+            
+            --border-color: #e2e8f0;
+            --shadow-premium: 0 10px 25px -5px rgba(15, 23, 42, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* =========================================================
+           NAVEGACIÓN VERTICAL (SIDEBAR)
+           ========================================================= */
+        .sidebar {
+            width: 280px;
+            background-color: var(--bg-sidebar);
+            color: var(--text-light);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .brand-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand-header i {
+            font-size: 2rem;
+            color: var(--color-secundario);
+        }
+
+        .brand-header h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 1.5rem 0;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            padding: 0.25rem 1rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .nav-link i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: var(--color-secundario);
+        }
+
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 200;
+            background: var(--color-primario);
+            color: var(--color-acento);
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: var(--shadow-premium);
+        }
+
+        /* =========================================================
+           CONTENEDOR PRINCIPAL Y VISTAS (SPA)
+           ========================================================= */
+        .main-container {
+            margin-left: 280px;
+            flex-grow: 1;
+            width: calc(100% - 280px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .view-section {
+            display: none;
+            padding: 2.5rem 3rem;
+            animation: fadeIn 0.4s ease forwards;
+            flex-grow: 1;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .view-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--bg-sidebar);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* =========================================================
+           HERO & TARJETAS
+           ========================================================= */
+        .hero {
+            background: linear-gradient(135deg, var(--bg-sidebar) 0%, var(--color-primario) 100%);
+            color: var(--color-acento);
+            padding: 4rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow-premium);
+            margin-bottom: 3rem;
+        }
+
+        .hero h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+            max-width: 700px;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.85rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background-color: var(--color-secundario);
+            color: var(--color-acento);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-primario);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--color-acento);
+            border: 2px solid var(--color-acento);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        /* Grid Beneficios */
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .benefit-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            transition: var(--transition);
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--color-secundario);
+            box-shadow: var(--shadow-premium);
+        }
+
+        .benefit-card i {
+            font-size: 2.5rem;
+            color: var(--color-primario);
+            margin-bottom: 1rem;
+        }
+
+        /* Tarjetas de Equipo Técnico */
+        .staff-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 2rem;
+        }
+
+        .staff-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: var(--transition);
+        }
+
+        .staff-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-premium);
+        }
+
+        .staff-img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            background-color: #e2e8f0;
+        }
+
+        .staff-info {
+            padding: 1.5rem;
+        }
+
+        .staff-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--bg-sidebar);
+            margin-bottom: 0.25rem;
+        }
+
+        .staff-role {
+            font-size: 0.85rem;
+            color: var(--color-primario);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .staff-dept {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .staff-desc {
+            font-size: 0.9rem;
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .btn-full {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* =========================================================
+           TABLAS, FORMULARIOS Y MAPAS
+           ========================================================= */
+        .panel-container {
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th, .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+
+        .data-table th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Formulario */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media(max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
+
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .form-group.full { grid-column: 1 / -1; }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--bg-sidebar);
+        }
+
+        .form-control {
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: inherit;
+            background: #f8fafc;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-secundario);
+            background: var(--bg-card);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            display: none;
+            font-weight: 500;
+            text-align: center;
+        }
+        .form-alert.success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .form-alert.error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+        /* Mapa */
+        .map-wrapper {
+            width: 100%;
+            height: 450px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        /* =========================================================
+           FAQ ACORDEÓN
+           ========================================================= */
+        .faq-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            background: var(--bg-card);
+            overflow: hidden;
+        }
+
+        .faq-header {
+            padding: 1.25rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--bg-sidebar);
+            background: #f8fafc;
+        }
+
+        .faq-body {
+            padding: 0 1.5rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .faq-item.open .faq-body {
+            padding: 1.25rem 1.5rem;
+            max-height: 500px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* =========================================================
+           MODALES
+           ========================================================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--color-acento);
+            padding: 2rem;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            position: relative;
+            text-align: center;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .modal-img {
+            width: 100%;
+            height: auto;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-dept {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-primario);
+        }
+
+        /* =========================================================
+           FOOTER
+           ========================================================= */
+        footer {
+            background-color: var(--bg-sidebar);
+            color: var(--color-acento);
+            text-align: center;
+            padding: 2rem;
+            margin-top: auto;
+        }
+
+        /* =========================================================
+           WIDGETS FLOTANTES (WHATSAPP Y CHATBOT)
+           ========================================================= */
+        .widget-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 999;
+        }
+
+        .btn-float {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--color-acento);
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .btn-float:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+
+        .btn-wa { background-color: #25D366; }
+        .btn-bot { background-color: var(--color-primario); }
+
+        /* Ventana del Chatbot */
+        .chat-window {
+            position: fixed;
+            bottom: 6rem;
+            right: 2rem;
+            width: 360px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(15, 23, 42, 0.2);
+            border: 1px solid var(--border-color);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            animation: slideUp 0.3s ease forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chat-top {
+            background: var(--color-primario);
+            color: var(--color-acento);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .chat-top button {
+            background: transparent;
+            border: none;
+            color: var(--color-acento);
+            cursor: pointer;
+            font-size: 1.2rem;
+            margin-left: 0.5rem;
+        }
+
+        .chat-history {
+            height: 320px;
+            padding: 1rem;
+            background: #f8fafc;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .msg-bubble {
+            max-width: 85%;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .msg-bot {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg-user {
+            background: var(--color-secundario);
+            color: var(--color-acento);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-chips {
+            padding: 0.75rem;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .chat-chips::-webkit-scrollbar { height: 4px; }
+        .chat-chips::-webkit-scrollbar-thumb { background: var(--color-secundario); border-radius: 4px; }
+
+        .chip-btn {
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: var(--text-main);
+            transition: var(--transition);
+        }
+
+        .chip-btn:hover {
+            background: var(--color-secundario);
+            color: var(--color-acento);
+            border-color: var(--color-secundario);
+        }
+
+        .chat-form {
+            display: flex;
+            padding: 1rem;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .chat-form input {
+            flex-grow: 1;
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .chat-form button {
+            background: var(--color-primario);
+            color: var(--color-acento);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin-left: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chat-form button:hover { background: var(--bg-sidebar); }
+
+        .typing { display: none; font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
+
+        /* =========================================================
+           RESPONSIVE REGLAS
+           ========================================================= */
+        @media(max-width: 992px) {
+            .mobile-toggle { display: block; }
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-container { margin-left: 0; width: 100%; }
+            .view-section { padding: 5rem 1.5rem 2rem 1.5rem; }
+            .hero { padding: 3rem 2rem; }
+            .chat-window { width: calc(100% - 4rem); right: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Botón Menú Móvil -->
+    <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+
+    <!-- BARRA LATERAL -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand-header">
+            <i class="fa-solid fa-server"></i>
+            <h1>Dashboard de Control<br>Help Desk</h1>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a class="nav-link active" onclick="switchView('inicio', this)"><i class="fa-solid fa-house"></i> Inicio</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="switchView('historico', this)"><i class="fa-solid fa-clock-rotate-left"></i> Histórico de tickets</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="switchView('inventario', this)"><i class="fa-solid fa-boxes-stacked"></i> Inventario de activos</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="switchView('marcas', this)"><i class="fa-solid fa-tags"></i> Marcas</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="switchView('estado', this)"><i class="fa-solid fa-chart-pie"></i> Estado</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="switchView('sinresolver', this)"><i class="fa-solid fa-triangle-exclamation"></i> Tickets sin resolver</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="switchView('resueltos', this)"><i class="fa-solid fa-check-double"></i> Total de tickets resueltos</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="switchView('sla', this)"><i class="fa-solid fa-stopwatch"></i> SLA</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="switchView('ubicacion', this)"><i class="fa-solid fa-map-location-dot"></i> Ubicación</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="switchView('faq', this)"><i class="fa-solid fa-circle-question"></i> FAQ</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="switchView('contacto', this)"><i class="fa-solid fa-headset"></i> Levantar Ticket</a></li>
+        </ul>
+    </aside>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="main-container">
+        
+        <!-- VISTA: INICIO -->
+        <section id="inicio" class="view-section active">
+            <!-- Hero -->
+            <div class="hero">
+                <h2>Portal Corporativo de TI</h2>
+                <p>Portal dirigido al equipo de soporte técnico y colaboradores, diseñado para gestionar el ciclo de vida de los tickets de incidencias, administrar el inventario de activos tecnológicos y monitorear los acuerdos de nivel de servicio (SLA).</p>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="switchView('contacto', document.querySelectorAll('.nav-link')[10])"><i class="fa-solid fa-plus"></i> Levantar Ticket</button>
+                    <button class="btn btn-outline" onclick="switchView('inventario', document.querySelectorAll('.nav-link')[2])"><i class="fa-solid fa-boxes-stacked"></i> Ver Activos</button>
+                </div>
+            </div>
+
+            <!-- Beneficios -->
+            <h2 class="view-title"><i class="fa-solid fa-star"></i> Beneficios del Help Desk</h2>
+            <div class="benefits-grid">
+                <div class="benefit-card"><i class="fa-solid fa-bolt"></i><h3>Soporte Rápido</h3></div>
+                <div class="benefit-card"><i class="fa-solid fa-route"></i><h3>Trazabilidad</h3></div>
+                <div class="benefit-card"><i class="fa-solid fa-display"></i><h3>Monitoreo 24/7</h3></div>
+                <div class="benefit-card"><i class="fa-solid fa-shield-halved"></i><h3>Seguridad</h3></div>
+                <div class="benefit-card"><i class="fa-solid fa-server"></i><h3>Control de Activos</h3></div>
+                <div class="benefit-card"><i class="fa-solid fa-chart-line"></i><h3>Métricas SLA</h3></div>
+            </div>
+
+            <!-- Equipo Técnico -->
+            <h2 class="view-title"><i class="fa-solid fa-users-gear"></i> Equipo de Soporte Técnico</h2>
+            <div class="staff-grid">
+                <!-- Tecnico 1 -->
+                <div class="staff-card">
+                    <img src="images copy 2.jpeg" alt="Hilton Hopkinson" class="staff-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100%\' height=\'100%\'><rect width=\'100%\' height=\'100%\' fill=\'%23f1f5f9\'/><text x=\'50%\' y=\'50%\' fill=\'%2364748b\' font-size=\'16\' text-anchor=\'middle\'>images copy 2.jpeg</text></svg>'">
+                    <div class="staff-info">
+                        <div class="staff-name">Hilton Hopkinson</div>
+                        <div class="staff-role">Administrador de Redes</div>
+                        <div class="staff-dept">Infraestructura Tecnológica</div>
+                        <p class="staff-desc">Especialista senior encargado del control de inventarios de activos y soporte de misión crítica.</p>
+                        <button class="btn btn-primary btn-full" onclick="openStaffModal('images copy 2.jpeg', 'Hilton Hopkinson', 'Administrador de Redes', 'Infraestructura Tecnológica', 'Especialista senior encargado del control de inventarios de activos y soporte de misión crítica.')">Ver perfil</button>
+                    </div>
+                </div>
+                <!-- Tecnico 2 -->
+                <div class="staff-card">
+                    <img src="Help-desk-ti-1" alt="Osman Mejía" class="staff-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100%\' height=\'100%\'><rect width=\'100%\' height=\'100%\' fill=\'%23f1f5f9\'/><text x=\'50%\' y=\'50%\' fill=\'%2364748b\' font-size=\'16\' text-anchor=\'middle\'>Help-desk-ti-1</text></svg>'">
+                    <div class="staff-info">
+                        <div class="staff-name">Osman Mejía</div>
+                        <div class="staff-role">Coordinador TI</div>
+                        <div class="staff-dept">Mesa de Servicios</div>
+                        <p class="staff-desc">Especialista en gobernanza corporativa, help desk empresarial y analítica de control de tickets.</p>
+                        <button class="btn btn-primary btn-full" onclick="openStaffModal('Help-desk-ti-1', 'Osman Mejía', 'Coordinador TI', 'Mesa de Servicios', 'Especialista en gobernanza corporativa, help desk empresarial y analítica de control de tickets.')">Ver perfil</button>
+                    </div>
+                </div>
+                <!-- Tecnico 3 -->
+                <div class="staff-card">
+                    <img src="images copy 3.jpeg" alt="Soporte N/D" class="staff-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100%\' height=\'100%\'><rect width=\'100%\' height=\'100%\' fill=\'%23f1f5f9\'/><text x=\'50%\' y=\'50%\' fill=\'%2364748b\' font-size=\'16\' text-anchor=\'middle\'>images copy 3.jpeg</text></svg>'">
+                    <div class="staff-info">
+                        <div class="staff-name">Soporte N/D</div>
+                        <div class="staff-role">N/D</div>
+                        <div class="staff-dept">N/D</div>
+                        <p class="staff-desc">N/D</p>
+                        <button class="btn btn-primary btn-full" onclick="openStaffModal('images copy 3.jpeg', 'Soporte N/D', 'N/D', 'N/D', 'N/D')">Ver perfil</button>
+                    </div>
+                </div>
+                <!-- Tecnico 4 -->
+                <div class="staff-card">
+                    <img src="images copy.png" alt="Analista N/D" class="staff-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100%\' height=\'100%\'><rect width=\'100%\' height=\'100%\' fill=\'%23f1f5f9\'/><text x=\'50%\' y=\'50%\' fill=\'%2364748b\' font-size=\'16\' text-anchor=\'middle\'>images copy.png</text></svg>'">
+                    <div class="staff-info">
+                        <div class="staff-name">Analista N/D</div>
+                        <div class="staff-role">N/D</div>
+                        <div class="staff-dept">N/D</div>
+                        <p class="staff-desc">N/D</p>
+                        <button class="btn btn-primary btn-full" onclick="openStaffModal('images copy.png', 'Analista N/D', 'N/D', 'N/D', 'N/D')">Ver perfil</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA: HISTÓRICO DE TICKETS -->
+        <section id="historico" class="view-section">
+            <h2 class="view-title"><i class="fa-solid fa-clock-rotate-left"></i> Histórico de tickets</h2>
+            <div class="panel-container">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>ID Ticket</th><th>Fecha/Hora</th><th>Área TI</th><th>Prioridad</th><th>Estado</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>INC-101</td><td>2026-11-20 08:30</td><td>Infraestructura Nube</td><td>Alta</td><td><strong style="color:var(--color-secundario)">Resuelto</strong></td></tr>
+                        <tr><td>INC-102</td><td>2026-11-20 10:15</td><td>Redes Perimetrales</td><td>Media</td><td><strong style="color:#f59e0b">En Progreso</strong></td></tr>
+                        <tr><td>N/D</td><td>N/D</td><td>N/D</td><td>N/D</td><td>N/D</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- VISTA: INVENTARIO DE ACTIVOS -->
+        <section id="inventario" class="view-section">
+            <h2 class="view-title"><i class="fa-solid fa-boxes-stacked"></i> Inventario de activos</h2>
+            <div class="panel-container">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Activo</th><th>Tipo</th><th>Marca</th><th>Estado</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>SRV-001</td><td>Servidor</td><td>Dell</td><td>Óptimo</td></tr>
+                        <tr><td>SW-001</td><td>Switch Capa 3</td><td>Cisco</td><td>Mantenimiento</td></tr>
+                        <tr><td>N/D</td><td>N/D</td><td>N/D</td><td>N/D</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- VISTA: SLA -->
+        <section id="sla" class="view-section">
+            <h2 class="view-title"><i class="fa-solid fa-stopwatch"></i> Acuerdos de Nivel de Servicio (SLA)</h2>
+            <div class="panel-container" style="max-width: 700px;">
+                <table class="data-table">
+                    <thead><tr><th>Prioridad</th><th>Tiempo de Respuesta (Máx)</th></tr></thead>
+                    <tbody>
+                        <tr><td>Alta (Crítico)</td><td>15 Minutos</td></tr>
+                        <tr><td>Media</td><td>2 Horas</td></tr>
+                        <tr><td>Baja</td><td>N/D</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- VISTAS PENDIENTES BÁSICAS -->
+        <section id="marcas" class="view-section"><h2 class="view-title"><i class="fa-solid fa-tags"></i> Marcas</h2><div class="panel-container"><p>N/D</p></div></section>
+        <section id="estado" class="view-section"><h2 class="view-title"><i class="fa-solid fa-chart-pie"></i> Estado</h2><div class="panel-container"><p>N/D</p></div></section>
+        <section id="sinresolver" class="view-section"><h2 class="view-title"><i class="fa-solid fa-triangle-exclamation"></i> Tickets sin resolver</h2><div class="panel-container"><p>N/D</p></div></section>
+        <section id="resueltos" class="view-section"><h2 class="view-title"><i class="fa-solid fa-check-double"></i> Total de tickets resueltos</h2><div class="panel-container"><p>N/D</p></div></section>
+
+        <!-- VISTA: UBICACIÓN -->
+        <section id="ubicacion" class="view-section">
+            <h2 class="view-title"><i class="fa-solid fa-map-location-dot"></i> Ubicación</h2>
+            <div class="map-wrapper">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1538.965245475887!2d-87.1858802533948!3d14.08585682987893!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8f6fa2d48f000001%3A0x1095945961e5e989!2s2%20Boulevard%20Suyapa%2C%2011101%20Tegucigalpa%2C%20Francisco%20Moraz%C3%A1n!5e0!3m2!1sen!2shn!4v1783392381815!5m2!1sen!2shn" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            </div>
+        </section>
+
+        <!-- VISTA: FAQ -->
+        <section id="faq" class="view-section">
+            <h2 class="view-title"><i class="fa-solid fa-circle-question"></i> Preguntas Frecuentes (FAQ)</h2>
+            <div style="max-width: 800px;">
+                <div class="faq-item">
+                    <div class="faq-header" onclick="toggleFaq(this)">1. ¿Cómo levantar un ticket de emergencia? <i class="fa-solid fa-chevron-down"></i></div>
+                    <div class="faq-body"><br>Puedes hacerlo directamente desde la sección Contacto / Levantar Ticket seleccionando prioridad Alta.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-header" onclick="toggleFaq(this)">2. ¿Cuáles son los tiempos de respuesta (SLA)? <i class="fa-solid fa-chevron-down"></i></div>
+                    <div class="faq-body"><br>Para incidentes críticos el SLA es de 15 minutos. Revisa la sección SLA para más detalles.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-header" onclick="toggleFaq(this)">3. ¿Qué hago si olvidé mi contraseña VPN? <i class="fa-solid fa-chevron-down"></i></div>
+                    <div class="faq-body"><br>Levanta un ticket con prioridad Media o interactúa con el Chatbot IA para iniciar el reseteo.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-header" onclick="toggleFaq(this)">4. ¿Cómo veo el estado de la red? <i class="fa-solid fa-chevron-down"></i></div>
+                    <div class="faq-body"><br>N/D</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-header" onclick="toggleFaq(this)">5. ¿Dónde se encuentra el equipo de soporte físico? <i class="fa-solid fa-chevron-down"></i></div>
+                    <div class="faq-body"><br>Nos encontramos en Boulevard Morazan. Revisa el mapa en la sección de Ubicación.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-header" onclick="toggleFaq(this)">6. ¿Puedo contactar por WhatsApp? <i class="fa-solid fa-chevron-down"></i></div>
+                    <div class="faq-body"><br>Sí, presiona el botón verde de WhatsApp en la esquina inferior derecha.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA: CONTACTO Y FORMULARIO -->
+        <section id="contacto" class="view-section">
+            <h2 class="view-title"><i class="fa-solid fa-headset"></i> Levantar Ticket & Contacto</h2>
+            
+            <div style="display: flex; gap: 2rem; flex-wrap: wrap; margin-bottom: 2rem;">
+                <div class="panel-container" style="flex: 1; min-width: 300px;">
+                    <h3 style="margin-bottom: 1rem; color: var(--color-primario);"><i class="fa-solid fa-address-card"></i> Datos de Contacto</h3>
+                    <p style="margin-bottom: 0.5rem;"><strong><i class="fa-solid fa-phone"></i> Teléfono:</strong> 50489900088</p>
+                    <p style="margin-bottom: 0.5rem;"><strong><i class="fa-solid fa-envelope"></i> Correo:</strong> osman.mejia@gmail.com</p>
+                    <p style="margin-bottom: 0.5rem;"><strong><i class="fa-solid fa-map-pin"></i> Dirección:</strong> Boulevard Morazan</p>
+                </div>
+            </div>
+
+            <div class="panel-container">
+                <h3 style="margin-bottom: 1.5rem; color: var(--color-primario);">Formulario de Mesa de Servicios</h3>
+                <form id="helpdeskForm">
+                    <div class="form-grid">
+                        <div class="form-group"><label>ID Ticket</label><input type="text" id="id_ticket" class="form-control" required></div>
+                        <div class="form-group"><label>Fecha y Hora</label><input type="datetime-local" id="fecha_hora" class="form-control" required></div>
+                        <div class="form-group"><label>Nombre del Colaborador</label><input type="text" id="nombre" class="form-control" required></div>
+                        <div class="form-group"><label>Correo Institucional</label><input type="email" id="correo" class="form-control" required></div>
+                        <div class="form-group"><label>Área TI</label><input type="text" id="area" class="form-control" required></div>
+                        <div class="form-group"><label>Prioridad SLA</label>
+                            <select id="prioridad" class="form-control" required>
+                                <option value="Baja">Baja</option>
+                                <option value="Media">Media</option>
+                                <option value="Alta">Alta</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Estado</label><input type="text" id="estado" value="Abierto" class="form-control" required></div>
+                        <div class="form-group"><label>Técnico Asignado</label><input type="text" id="tecnico" class="form-control" required></div>
+                        <div class="form-group full"><label>Descripción Técnica</label><textarea id="descripcion" rows="3" class="form-control" required></textarea></div>
+                        <div class="form-group"><label>Tiempo Resolución (Min)</label><input type="number" id="tiempo" value="0" class="form-control" required></div>
+                    </div>
+                    <div style="margin-top: 2rem; text-align: right;">
+                        <button type="submit" id="btnSubmit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Contactar a Soporte</button>
+                    </div>
+                </form>
+                <div id="formMsg" class="form-alert"></div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer>
+            <p>&copy; 2026 Dashboard de control Para Help Desk. Diseñado con altos estándares corporativos.</p>
+        </footer>
+    </main>
+
+    <!-- =========================================================
+         MODAL PERFIL STAFF
+         ========================================================= -->
+    <div class="modal-bg" id="staffModal">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeStaffModal()"><i class="fa-solid fa-xmark"></i></button>
+            <img src="" id="modalPhoto" class="modal-img" alt="Foto">
+            <h2 id="modalName" style="color: var(--bg-sidebar); margin-bottom: 0.25rem;">Nombre</h2>
+            <div id="modalRole" style="color: var(--color-primario); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem;">Cargo</div>
+            <div id="modalDept" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Depto</div>
+            <p id="modalBio" style="font-size: 0.95rem; line-height: 1.5; color: var(--text-main); margin-bottom: 1.5rem;">Biografía</p>
+            <button class="btn btn-primary btn-full" onclick="closeStaffModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         WIDGETS FLOTANTES (WA & CHATBOT)
+         ========================================================= -->
+    <div class="widget-container">
+        
+        <!-- Ventana Chatbot -->
+        <div class="chat-window" id="botWindow">
+            <div class="chat-top">
+                <span><i class="fa-solid fa-robot"></i> Asistente IT</span>
+                <div>
+                    <button onclick="clearBot()" title="Limpiar Chat"><i class="fa-solid fa-trash-can"></i></button>
+                    <button onclick="toggleBot()" title="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            <div class="chat-history" id="botHistory">
+                <div class="msg-bubble msg-bot">Hola, soy el Asistente IT. ¿En qué te ayudo hoy?</div>
+                <div class="typing" id="botTyping">Escribiendo...</div>
+            </div>
+            <div class="chat-chips">
+                <button class="chip-btn" onclick="sendChip('🎫 Levantar Ticket')">🎫 Levantar Ticket</button>
+                <button class="chip-btn" onclick="sendChip('⏱️ Tiempos SLA')">⏱️ Tiempos SLA</button>
+                <button class="chip-btn" onclick="sendChip('🔑 Resetear Contraseña')">🔑 Resetear Contraseña</button>
+                <button class="chip-btn" onclick="sendChip('🌐 Falla de Red')">🌐 Falla de Red</button>
+                <button class="chip-btn" onclick="sendChip('📞 Contactar Técnico')">📞 Contactar Técnico</button>
+            </div>
+            <div class="chat-form">
+                <input type="text" id="botInput" placeholder="Escribe aquí..." onkeypress="if(event.key === 'Enter') sendUserMsg()">
+                <button onclick="sendUserMsg()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+        <!-- Botones Activadores -->
+        <button class="btn-float btn-bot" onclick="toggleBot()"><i class="fa-solid fa-robot"></i></button>
+        <a href="https://wa.me/50489900088?text=Hola.%20Necesito%20reportar%20una%20incidencia%20crítica%20en%20la%20Mesa%20de%20Servicios." target="_blank" class="btn-float btn-wa"><i class="fa-brands fa-whatsapp"></i></a>
+    </div>
+
+    <!-- =========================================================
+         LÓGICA JAVASCRIPT
+         ========================================================= -->
+    <script>
+        /* 1. CONSTANTE DEL APPS SCRIPT (ACTUALIZADA) */
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbykbod-WCKk6ddT2pDlXixmVw8151-qTBZHFF4KmAGMM3kW11SHur09CbczHTVWwVA8og/exec";
+
+        /* 2. RUTAS Y VISTAS (SPA) */
+        function switchView(viewId, navElement) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
+            document.getElementById(viewId).classList.add('active');
+            if(navElement) navElement.classList.add('active');
+
+            if(window.innerWidth <= 992) {
+                document.getElementById('sidebar').classList.remove('active');
+            }
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        /* 3. FAQ ACORDEÓN */
+        function toggleFaq(el) {
+            const item = el.parentElement;
+            item.classList.toggle('open');
+            const icon = el.querySelector('i');
+            icon.className = item.classList.contains('open') ? "fa-solid fa-chevron-up" : "fa-solid fa-chevron-down";
+        }
+
+        /* 4. MODAL STAFF */
+        function openStaffModal(img, name, role, dept, bio) {
+            document.getElementById('modalPhoto').src = img;
+            document.getElementById('modalPhoto').onerror = function() {
+                this.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'><rect width='100%' height='100%' fill='%23f1f5f9'/><text x='50%' y='50%' fill='%2364748b' font-size='16' text-anchor='middle'>${img}</text></svg>`;
+            };
+            document.getElementById('modalName').innerText = name;
+            document.getElementById('modalRole').innerText = role;
+            document.getElementById('modalDept').innerText = dept;
+            document.getElementById('modalBio').innerText = bio;
+            document.getElementById('staffModal').style.display = 'flex';
+        }
+        function closeStaffModal() { document.getElementById('staffModal').style.display = 'none'; }
+
+        /* 5. FORMULARIO Y FETCH A GOOGLE SHEETS (ACTUALIZADO CON URLSearchParams) */
+        document.getElementById('helpdeskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            const alertBox = document.getElementById('formMsg');
+            
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+            btn.disabled = true;
+            alertBox.style.display = 'none';
+            alertBox.className = 'form-alert';
+
+            // Usamos URLSearchParams para evitar problemas de CORS de forma nativa
+            const payload = new URLSearchParams({
+                ID_Ticket: document.getElementById('id_ticket').value,
+                Fecha_Hora: document.getElementById('fecha_hora').value,
+                Nombre_Colaborador: document.getElementById('nombre').value,
+                Correo_Institucional: document.getElementById('correo').value,
+                Area_TI: document.getElementById('area').value,
+                Prioridad_SLA: document.getElementById('prioridad').value,
+                Estado: document.getElementById('estado').value,
+                Descripcion_Tecnica: document.getElementById('descripcion').value,
+                Tecnico_Asignado: document.getElementById('tecnico').value,
+                Tiempo_Resolucion_Min: document.getElementById('tiempo').value
+            });
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: payload
+                });
+                
+                alertBox.innerHTML = "✅ Gracias. El ticket fue registrado exitosamente en el sistema.";
+                alertBox.classList.add('success');
+                alertBox.style.display = 'block';
+                document.getElementById('helpdeskForm').reset();
+            } catch(err) {
+                alertBox.innerHTML = "⚠️ Ocurrió un error de red. Inténtalo de nuevo o verifica tu conexión.";
+                alertBox.classList.add('error');
+                alertBox.style.display = 'block';
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Contactar a Soporte';
+                btn.disabled = false;
+            }
+        });
+
+        /* 6. LÓGICA DEL CHATBOT */
+        const botHistory = document.getElementById('botHistory');
+        const typing = document.getElementById('botTyping');
+        const botInput = document.getElementById('botInput');
+
+        function toggleBot() {
+            const win = document.getElementById('botWindow');
+            win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function clearBot() {
+            botHistory.innerHTML = '<div class="msg-bubble msg-bot">Historial borrado. ¿En qué te ayudo?</div>';
+            botHistory.appendChild(typing);
+        }
+
+        function sendChip(text) {
+            addMsg(text, 'user');
+            botReply(text);
+        }
+
+        function sendUserMsg() {
+            const text = botInput.value.trim();
+            if(!text) return;
+            addMsg(text, 'user');
+            botInput.value = '';
+            botReply(text);
+        }
+
+        function addMsg(text, sender) {
+            const div = document.createElement('div');
+            div.className = `msg-bubble msg-${sender}`;
+            div.innerText = text;
+            botHistory.insertBefore(div, typing);
+            botHistory.scrollTop = botHistory.scrollHeight;
+        }
+
+        function botReply(query) {
+            typing.style.display = 'block';
+            botHistory.scrollTop = botHistory.scrollHeight;
+            
+            setTimeout(() => {
+                typing.style.display = 'none';
+                let q = query.toLowerCase();
+                let ans = "";
+
+                if(q.includes('ticket')) ans = "Puedes levantar un ticket accediendo a la sección 'Contacto' en el menú principal.";
+                else if(q.includes('sla') || q.includes('tiempo')) ans = "Nuestro SLA es de 15 minutos para criticidad Alta y 2 horas para Media. Ver detalles en la vista SLA.";
+                else if(q.includes('contraseña') || q.includes('reset')) ans = "Para resetear tu contraseña, levanta un ticket en el formulario indicando tu correo y equipo afectado.";
+                else if(q.includes('red') || q.includes('falla')) ans = "Si presentas fallas de red, por favor reporta el incidente de inmediato como Prioridad Alta en la pestaña Contacto.";
+                else if(q.includes('contacto') || q.includes('telefono') || q.includes('correo')) ans = "Puedes contactarnos al 50489900088, escribir a osman.mejia@gmail.com o usar el botón de WhatsApp.";
+                else ans = "No dispongo de esa información exacta. Te recomendamos usar el botón oficial de WhatsApp para comunicarte con un técnico o usar el Formulario de la Mesa de Servicios.";
+
+                addMsg(ans, 'bot');
+            }, 800);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de control Para Help Desk</title>
+    
+    <!-- Fuentes Corporativas de Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Iconografía Profesional vía FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* ==========================================================================
+           1. CORE DESIGN SYSTEM & VARIABLES (PALETA CORPORATIVA OBLIGATORIA)
+           ========================================================================== */
+        :root {
+            --color-primario: #7a9266;      /* Verde Oliva suave */
+            --color-secundario: #f7e6a9;    /* Amarillo suave */
+            --color-acento: #ffffff;        /* Blanco */
+            --bg-dark: #1e2519;             /* Variación oscura de oliva para textos profundos */
+            --bg-light: #f9fbf7;            /* Fondo claro suavizado */
+            --text-dark: #2d3527;
+            --text-muted: #626c58;
+            --border-color: #e6ebd3;
+            --shadow-premium: 0 10px 30px -5px rgba(122, 146, 102, 0.15), 0 4px 6px -2px rgba(122, 146, 102, 0.05);
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.5;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        /* ==========================================================================
+           2. ARQUITECTURA DE CONTENEDORES: BARRA DE NAVEGACIÓN VERTICAL FIJA
+           ========================================================================== */
+        nav.nav-vertical {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 260px;
+            background: linear-gradient(180deg, var(--color-primario) 0%, var(--bg-dark) 100%);
+            color: var(--color-acento);
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            z-index: 100;
+            box-shadow: 4px 0 25px rgba(0, 0, 0, 0.05);
+            overflow-y: auto;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 0.5rem 1.5rem 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .brand-logo {
+            background-color: var(--color-secundario);
+            color: var(--bg-dark);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-premium);
+        }
+
+        .brand-title h1 {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            color: var(--color-acento);
+        }
+
+        .brand-title p {
+            font-size: 0.75rem;
+            color: var(--color-secundario);
+            font-weight: 500;
+        }
+
+        .menu-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .menu-item button {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-align: left;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: var(--transition-smooth);
+        }
+
+        .menu-item button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--color-acento);
+            transform: translateX(4px);
+        }
+
+        .menu-item.active button {
+            background-color: var(--color-secundario);
+            color: var(--bg-dark);
+            font-weight: 600;
+            box-shadow: var(--shadow-premium);
+        }
+
+        /* Contenedor de Contenido Principal */
+        main.main-content {
+            margin-left: 260px;
+            flex-grow: 1;
+            min-height: 100vh;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Sistema de Gestión de Vistas Independientes */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==========================================================================
+           3. ESTRUCTURAS COMPONENTES: HERO, CARDS PREMIUM Y TABLAS
+           ========================================================================== */
+        .hero-banner {
+            background: linear-gradient(135deg, var(--color-primario) 0%, var(--bg-dark) 100%);
+            border-radius: 16px;
+            padding: 4rem 3rem;
+            color: var(--color-acento);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-premium);
+            margin-bottom: 2.5rem;
+        }
+
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 80% 20%, var(--color-secundario) 0%, transparent 40%);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            letter-spacing: -0.03em;
+        }
+
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: var(--color-secundario);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            font-weight: 400;
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 1rem;
+            border-radius: 10px;
+            width: fit-content;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-meta span i {
+            color: var(--color-secundario);
+            margin-right: 0.5rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--color-secundario);
+            color: var(--bg-dark);
+            box-shadow: var(--shadow-premium);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px rgba(122, 146, 102, 0.25);
+            background-color: #fceea1;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--color-acento);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: var(--color-acento);
+        }
+
+        /* Grid de Tarjetas Modernas */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .premium-card {
+            background-color: var(--color-acento);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: var(--shadow-premium);
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .premium-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px -5px rgba(122, 146, 102, 0.25);
+            border-color: var(--color-primario);
+        }
+
+        .card-img-box {
+            width: 100%;
+            height: 200px;
+            background-color: #eaefe3;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-body-content {
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .card-name-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .card-puesto-tag {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--color-primario);
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-desc-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.25rem;
+            flex-grow: 1;
+        }
+
+        .card-action-btn {
+            width: 100%;
+            padding: 0.65rem;
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: var(--color-primario);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            text-align: center;
+        }
+
+        .premium-card:hover .card-action-btn {
+            background-color: var(--color-primario);
+            color: var(--color-acento);
+            border-color: var(--color-primario);
+        }
+
+        /* Estilos de Tabla Avanzada */
+        .table-panel {
+            background-color: var(--color-acento);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--shadow-premium);
+            overflow: hidden;
+            margin-top: 1.5rem;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+
+        table.data-table th {
+            background-color: var(--color-primario);
+            color: var(--color-acento);
+            padding: 1rem;
+            font-weight: 600;
+        }
+
+        table.data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-dark);
+        }
+
+        table.data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        table.data-table tr:nth-child(even) {
+            background-color: var(--bg-light);
+        }
+
+        /* Componentes Métricos (KPI KPI Blocks) */
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-box {
+            background-color: var(--color-acento);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 14px;
+            box-shadow: var(--shadow-premium);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .metric-value-num {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-primario);
+            line-height: 1.2;
+        }
+
+        .metric-label-txt {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+
+        .metric-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background-color: var(--bg-light);
+            color: var(--color-primario);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        /* ==========================================================================
+           4. FORMULARIOS, MAPAS Y LINEAS DE TIEMPO
+           ========================================================================== */
+        .form-container-box {
+            background-color: var(--color-acento);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-premium);
+            max-width: 700px;
+        }
+
+        .form-grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .form-grid-layout { grid-template-columns: 1fr; }
+        }
+
+        .form-field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-field-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-field-group label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        .form-input-ctrl {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-light);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.875rem;
+            color: var(--text-dark);
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .form-input-ctrl:focus {
+            border-color: var(--color-primario);
+            background-color: var(--color-acento);
+            box-shadow: 0 0 0 3px rgba(122, 146, 102, 0.15);
+        }
+
+        /* Mapa Autoadaptable / Responsive Container */
+        .map-wrapper-fluid {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-premium);
+            border: 1px solid var(--border-color);
+            position: relative;
+            padding-bottom: 45%; /* Relación de aspecto responsivo */
+            height: 0;
+        }
+
+        .map-wrapper-fluid iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Línea de Tiempo (Timeline) */
+        .timeline-structure {
+            position: relative;
+            max-width: 800px;
+            margin: 2rem 0;
+            padding-left: 2rem;
+            border-left: 3px solid var(--border-color);
+        }
+
+        .timeline-node {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-node::before {
+            content: '';
+            position: absolute;
+            left: calc(-2rem - 8px);
+            top: 4px;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background-color: var(--color-secundario);
+            border: 3px solid var(--color-primario);
+        }
+
+        .timeline-card {
+            background-color: var(--color-acento);
+            border: 1px solid var(--border-color);
+            padding: 1.25rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow-premium);
+        }
+
+        /* Accordion FAQ */
+        .faq-accordion-block {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 800px;
+        }
+
+        .faq-item {
+            background-color: var(--color-acento);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow-premium);
+        }
+
+        .faq-header-trigger {
+            width: 100%;
+            padding: 1.25rem;
+            background: transparent;
+            border: none;
+            text-align: left;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition-smooth);
+        }
+
+        .faq-header-trigger:hover {
+            background-color: var(--bg-light);
+            color: var(--color-primario);
+        }
+
+        .faq-panel-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
+            background-color: var(--bg-light);
+        }
+
+        .faq-panel-body p {
+            padding: 1.25rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* ==========================================================================
+           5. INTERFACES FLOTANTES EXTRA: CHATBOT E ICONOS OFICIALES
+           ========================================================================== */
+        .floating-layer-panel {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-end;
+            z-index: 500;
+        }
+
+        .floating-trigger-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            transition: var(--transition-smooth);
+            text-decoration: none;
+        }
+
+        .floating-trigger-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-wa-official {
+            background-color: #25D366;
+            color: var(--color-acento);
+        }
+
+        .btn-bot-corporate {
+            background-color: var(--color-primario);
+            color: var(--color-acento);
+        }
+
+        /* Ventana del Chatbot Completo */
+        .chatbot-container-window {
+            position: fixed;
+            bottom: 6.5rem;
+            right: 2rem;
+            width: 380px;
+            height: 500px;
+            background-color: var(--color-acento);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(45, 53, 39, 0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 600;
+            animation: winOpen 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes winOpen {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .chat-header-banner {
+            background: linear-gradient(135deg, var(--color-primario) 0%, var(--bg-dark) 100%);
+            color: var(--color-acento);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-header-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chat-header-profile i {
+            font-size: 1.25rem;
+            color: var(--color-secundario);
+        }
+
+        .chat-header-profile span {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .chat-ctrl-actions button {
+            background: transparent;
+            border: none;
+            color: var(--color-acento);
+            cursor: pointer;
+            padding: 0.25rem;
+            font-size: 1rem;
+            opacity: 0.8;
+            transition: var(--transition-smooth);
+        }
+
+        .chat-ctrl-actions button:hover { opacity: 1; }
+
+        .chat-log-box {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background-color: var(--bg-light);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .chat-bubble-msg {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            word-wrap: break-word;
+        }
+
+        .chat-bubble-msg.bot {
+            background-color: var(--color-acento);
+            color: var(--text-dark);
+            border-radius: 12px 12px 12px 0;
+            border: 1px solid var(--border-color);
+            align-self: flex-start;
+        }
+
+        .chat-bubble-msg.user {
+            background-color: var(--color-primario);
+            color: var(--color-acento);
+            border-radius: 12px 12px 0 12px;
+            align-self: flex-end;
+        }
+
+        .chat-chips-scroll {
+            padding: 0.5rem 1rem;
+            background-color: var(--color-acento);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+
+        .suggested-chip-btn {
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0.75rem;
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .suggested-chip-btn:hover {
+            background-color: var(--color-secundario);
+            border-color: var(--color-primario);
+        }
+
+        .chat-input-row {
+            padding: 0.75rem 1rem;
+            background-color: var(--color-acento);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-input-ctrl {
+            flex-grow: 1;
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            outline: none;
+            background-color: var(--bg-light);
+        }
+
+        .chat-send-action-btn {
+            background-color: var(--color-primario);
+            color: var(--color-acento);
+            border: none;
+            padding: 0 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .chat-send-action-btn:hover { background-color: var(--bg-dark); }
+
+        .typing-indicator-node {
+            display: none;
+            align-self: flex-start;
+            background-color: rgba(122, 146, 102, 0.1);
+            color: var(--color-primario);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* Modal Modales Popups */
+        .modal-overlay-backdrop {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(45, 53, 39, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .modal-body-container {
+            background-color: var(--color-acento);
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: 0 25px 60px -15px rgba(0,0,0,0.3);
+            animation: modalAnim 0.3s ease-out;
+        }
+
+        @keyframes modalAnim {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header-panel {
+            padding: 1.25rem;
+            background-color: var(--bg-light);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-content-inner {
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .modal-expanded-pic {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            background-color: var(--bg-light);
+        }
+
+        /* Footer Estándar */
+        footer.portal-footer {
+            margin-top: auto;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* ==========================================================================
+           6. RESPONSIVE DESIGN & ADAPTABILIDAD GENERAL
+           ========================================================================== */
+        @media (max-width: 1024px) {
+            nav.nav-vertical {
+                width: 70px;
+                padding: 1.5rem 0.5rem;
+            }
+            nav.nav-vertical .brand-title, nav.nav-vertical .menu-item span {
+                display: none;
+            }
+            nav.nav-vertical .brand-container {
+                justify-content: center;
+                padding-bottom: 1rem;
+            }
+            main.main-content {
+                margin-left: 70px;
+                padding: 1.5rem;
+            }
+            .hero-banner { padding: 2.5rem 1.5rem; }
+            .hero-title { font-size: 1.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==========================================
+       BARRA DE NAVEGACIÓN VERTICAL FIJA (IZQUIERDA)
+       ========================================== -->
+    <nav class="nav-vertical">
+        <div class="brand-container">
+            <div class="brand-logo">
+                <i class="fa-solid fa-square-poll-horizontal"></i>
+            </div>
+            <div class="brand-title">
+                <h1>Help Desk TI</h1>
+                <p>Mesa de Servicios</p>
+            </div>
+        </div>
+        <ul class="menu-list">
+            <li class="menu-item active" id="btn-inicio"><button onclick="navigateTo('inicio')"><i class="fa-solid fa-house"></i> <span>Inicio</span></button></li>
+            <li class="menu-item" id="btn-historico"><button onclick="navigateTo('historico')"><i class="fa-solid fa-list-check"></i> <span>Historico de tickets</span></button></li>
+            <li class="menu-item" id="btn-inventario"><button onclick="navigateTo('inventario')"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventario de activos</span></button></li>
+            <li class="menu-item" id="btn-marcas"><button onclick="navigateTo('marcas')"><i class="fa-solid fa-tags"></i> <span>Marcas</span></button></li>
+            <li class="menu-item" id="btn-estado"><button onclick="navigateTo('estado')"><i class="fa-solid fa-circle-info"></i> <span>Estado</span></button></li>
+            <li class="menu-item" id="btn-sinresolver"><button onclick="navigateTo('sinresolver')"><i class="fa-solid fa-triangle-exclamation"></i> <span>Tickets sin resolver</span></button></li>
+            <li class="menu-item" id="btn-resueltos"><button onclick="navigateTo('resueltos')"><i class="fa-solid fa-circle-check"></i> <span>Total de tickets resueltos</span></button></li>
+            <li class="menu-item" id="btn-sla"><button onclick="navigateTo('sla')"><i class="fa-solid fa-business-time"></i> <span>SLA</span></button></li>
+            <li class="menu-item" id="btn-ubicacion"><button onclick="navigateTo('ubicacion')"><i class="fa-solid fa-map-location-dot"></i> <span>Ubicación</span></button></li>
+            <li class="menu-item" id="btn-faq"><button onclick="navigateTo('faq')"><i class="fa-solid fa-circle-question"></i> <span>FAQ</span></button></li>
+            <li class="menu-item" id="btn-contacto"><button onclick="navigateTo('contacto')"><i class="fa-solid fa-envelope"></i> <span>Contacto</span></button></li>
+        </ul>
+    </nav>
+
+    <!-- ==========================================
+       CONTENEDOR PRINCIPAL DE COMPONENTES Y VISTAS
+       ========================================== -->
+    <main class="main-content">
+
+        <!-- VISTA 1: INICIO -->
+        <div id="view-inicio" class="view-section active">
+            <div class="hero-banner">
+                <h2 class="hero-title">Dashboard de control Para Help Desk</h2>
+                <p class="hero-subtitle">Evento dirigido a colaboradores, y tener un mejor control del inventario del equipo y el estado y el control de los tickets y como se van gestionando.</p>
+                <div class="hero-meta">
+                    <span><i class="fa-solid fa-calendar-day"></i> Congreso: N/D</span>
+                    <span><i class="fa-solid fa-clock"></i> Fecha: N/D</span>
+                    <span><i class="fa-solid fa-location-dot"></i> Lugar: N/D</span>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="navigateTo('contacto')">Inscribirme</button>
+                    <button class="btn btn-secondary" onclick="navigateTo('historico')">Ver Agenda</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem;">
+                <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 700;">Sobre el Congreso</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">Breve descripción del evento enfocado en optimizar el control de activos del equipo informático, la asignación estructurada de soporte corporativo y el seguimiento del estado de los incidentes internos.</p>
+                
+                <h4 style="font-weight: 600; margin-bottom: 1rem;">Beneficios de asistir:</h4>
+                <div class="cards-grid" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));">
+                    <div class="premium-card" style="padding: 1.25rem; align-items: center; text-center; text-align: center; gap: 0.5rem;">
+                        <div class="metric-icon-wrapper" style="background-color: var(--color-secundario);"><i class="fa-solid fa-users-rectangle"></i></div>
+                        <span style="font-weight: 600; font-size: 0.9rem;">Networking</span>
+                    </div>
+                    <div class="premium-card" style="padding: 1.25rem; align-items: center; text-center; text-align: center; gap: 0.5rem;">
+                        <div class="metric-icon-wrapper" style="background-color: var(--color-secundario);"><i class="fa-solid fa-chalkboard-user"></i></div>
+                        <span style="font-weight: 600; font-size: 0.9rem;">Conferencias</span>
+                    </div>
+                    <div class="premium-card" style="padding: 1.25rem; align-items: center; text-center; text-align: center; gap: 0.5rem;">
+                        <div class="metric-icon-wrapper" style="background-color: var(--color-secundario);"><i class="fa-solid fa-folder-open"></i></div>
+                        <span style="font-weight: 600; font-size: 0.9rem;">Casos reales</span>
+                    </div>
+                    <div class="premium-card" style="padding: 1.25rem; align-items: center; text-center; text-align: center; gap: 0.5rem;">
+                        <div class="metric-icon-wrapper" style="background-color: var(--color-secundario);"><i class="fa-solid fa-id-card"></i></div>
+                        <span style="font-weight: 600; font-size: 0.9rem;">Certificado</span>
+                    </div>
+                    <div class="premium-card" style="padding: 1.25rem; align-items: center; text-center; text-align: center; gap: 0.5rem;">
+                        <div class="metric-icon-wrapper" style="background-color: var(--color-secundario);"><i class="fa-solid fa-file-pdf"></i></div>
+                        <span style="font-weight: 600; font-size: 0.9rem;">Material digital</span>
+                    </div>
+                    <div class="premium-card" style="padding: 1.25rem; align-items: center; text-center; text-align: center; gap: 0.5rem;">
+                        <div class="metric-icon-wrapper" style="background-color: var(--color-secundario);"><i class="fa-solid fa-lightbulb"></i></div>
+                        <span style="font-weight: 600; font-size: 0.9rem;">Innovación</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección Conferencistas Integrada -->
+            <div style="margin-top: 3rem;">
+                <h3 style="font-size: 1.5rem; margin-bottom: 1rem; font-weight: 700;">Conferencistas Especialistas</h3>
+                <div class="cards-grid">
+                    <!-- Conferencista 1 -->
+                    <div class="premium-card">
+                        <div class="card-img-box"><img src="Help-desk-ti-1" alt="Foto"></div>
+                        <div class="card-body-content">
+                            <h4 class="card-name-title">Osman Mejía</h4>
+                            <span class="card-puesto-tag">MSc — Coordinador TI</span>
+                            <p class="card-desc-text">Especialista en gobernanza corporativa, help desk empresarial y analítica de control de tickets institucionales.</p>
+                            <button class="card-action-btn" onclick="openStaffModal('Help-desk-ti-1', 'Mesa de Servicios')">Ver detalle</button>
+                        </div>
+                    </div>
+                    <!-- Conferencista 2 -->
+                    <div class="premium-card">
+                        <div class="card-img-box"><img src="images copy 2" alt="Foto"></div>
+                        <div class="card-body-content">
+                            <h4 class="card-name-title">Hilton Hopkinson</h4>
+                            <span class="card-puesto-tag">Administrador de Redes</span>
+                            <p class="card-desc-text">Especialista senior encargado del control de inventarios de activos tecnológicos corporativos.</p>
+                            <button class="card-action-btn" onclick="openStaffModal('images copy 2', 'Infraestructura Tecnológica')">Ver detalle</button>
+                        </div>
+                    </div>
+                    <!-- Conferencista 3 -->
+                    <div class="premium-card">
+                        <div class="card-img-box"><img src="images copy 3" alt="Foto"></div>
+                        <div class="card-body-content">
+                            <h4 class="card-name-title">Colaborador N/D</h4>
+                            <span class="card-puesto-tag">Cargo: N/D</span>
+                            <p class="card-desc-text">Empresa: N/D — Breve descripción de soporte o monitoreo operativo general.</p>
+                            <button class="card-action-btn" onclick="openStaffModal('images copy 3', 'N/D')">Ver detalle</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA 2: HISTÓRICO DE TICKETS -->
+        <div id="view-historico" class="view-section">
+            <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem;"><i class="fa-solid fa-list-check text-muted"></i> Historico de tickets</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; mb-4">Registro consolidado de incidentes procesados en la hoja 'Historico de tickets' de Google Sheets.</p>
+            
+            <div class="table-panel">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID_Ticket</th>
+                                <th>Fecha_Hora</th>
+                                <th>Nombre_Colaborador</th>
+                                <th>Area_TI</th>
+                                <th>Prioridad_SLA</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>INC-2026-0001</td>
+                                <td>2026-07-06 08:30</td>
+                                <td>Hilton Hopkinson</td>
+                                <td>Infraestructura Nube</td>
+                                <td>Alta</td>
+                                <td style="font-weight:600; color:var(--color-primario);">Resuelto</td>
+                            </tr>
+                            <tr>
+                                <td>INC-2026-0002</td>
+                                <td>2026-07-06 10:15</td>
+                                <td>Colaborador N/D</td>
+                                <td>Redes Perimetrales</td>
+                                <td>Media</td>
+                                <td style="font-weight:600; color:#c07d34;">En Progreso</td>
+                            </tr>
+                            <tr>
+                                <td>N/D</td>
+                                <td>N/D</td>
+                                <td>N/D</td>
+                                <td>N/D</td>
+                                <td>N/D</td>
+                                <td>N/D</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Agenda Modular Solicitada -->
+            <div style="margin-top: 3rem;">
+                <h3 style="font-weight:700; margin-bottom:1rem;">Agenda y Cronograma del Evento</h3>
+                <div class="timeline-structure">
+                    <div class="timeline-node">
+                        <div class="timeline-card">
+                            <span style="font-size:0.75rem; font-weight:700; color:var(--color-primario);">08:00 AM - 09:30 AM</span>
+                            <h4 style="font-size:1rem; font-weight:700; margin-top:0.25rem;">Apertura: Diagnóstico Inicial y Análisis Exploratorio de Datos (EDA)</h4>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;">Auditoría integral del inventario de hardware y variables de control en la central de ayuda.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-node">
+                        <div class="timeline-card">
+                            <span style="font-size:0.75rem; font-weight:700; color:var(--color-primario);">10:00 AM - 12:00 PM</span>
+                            <h4 style="font-size:1rem; font-weight:700; margin-top:0.25rem;">Bloque Técnico: Integración Asíncrona con API de Google Sheets</h4>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;">Procesamiento distribuído mediante macros de Google Apps Script y persistencia de variables.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA 3: INVENTARIO DE ACTIVOS -->
+        <div id="view-inventario" class="view-section">
+            <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem;"><i class="fa-solid fa-boxes-stacked text-muted"></i> Inventario de activos</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Control y auditoría del equipamiento distribuido extraído de la hoja 'inventario de activos'.</p>
+            
+            <div class="table-panel">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID_Activo</th>
+                                <th>Componente</th>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>Estado Operacional</th>
+                                <th>IP Asignada</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>ACT-INF-001</td>
+                                <td>Servidor Blade</td>
+                                <td>Dell PowerEdge</td>
+                                <td>R750</td>
+                                <td>Óptimo</td>
+                                <td>10.100.1.5</td>
+                            </tr>
+                            <tr>
+                                <td>ACT-INF-002</td>
+                                <td>Switch Capa 3</td>
+                                <td>Cisco Catalyst</td>
+                                <td>C9300</td>
+                                <td>Mantenimiento</td>
+                                <td>10.100.1.254</td>
+                            </tr>
+                            <tr>
+                                <td>N/D</td>
+                                <td>N/D</td>
+                                <td>N/D</td>
+                                <td>N/D</td>
+                                <td>N/D</td>
+                                <td>N/D</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA 4: MARCAS -->
+        <div id="view-marcas" class="view-section">
+            <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem;"><i class="fa-solid fa-tags text-muted"></i> Distribución de Marcas Homologadas</h2>
+            <div class="cards-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+                <div class="premium-card" style="padding: 1.5rem; text-align: center; gap: 0.5rem; background-color: var(--color-secundario);">
+                    <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Fabricante Principal</span>
+                    <h3 style="font-size: 1.5rem; font-weight: 700;">Dell</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-dark);">Infraestructura de Cómputo</p>
+                </div>
+                <div class="premium-card" style="padding: 1.5rem; text-align: center; gap: 0.5rem; background-color: var(--color-secundario);">
+                    <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Redes y Core</span>
+                    <h3 style="font-size: 1.5rem; font-weight: 700;">Cisco</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-dark);">Enrutamiento y Conectividad</p>
+                </div>
+                <div class="premium-card" style="padding: 1.5rem; text-align: center; gap: 0.5rem;">
+                    <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Periféricos</span>
+                    <h3 style="font-size: 1.5rem; font-weight: 700;">N/D</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Sin detalles provistos</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA 5: ESTADO -->
+        <div id="view-estado" class="view-section">
+            <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem;"><i class="fa-solid fa-circle-info text-muted"></i> Estado de la Infraestructura</h2>
+            <div class="metrics-row">
+                <div class="metric-box" style="border-left: 5px solid var(--color-primario);">
+                    <div>
+                        <div class="metric-value-num">94%</div>
+                        <div class="metric-label-txt">Calidad de Datos Global</div>
+                    </div>
+                    <div class="metric-icon-wrapper"><i class="fa-solid fa-shield-heart"></i></div>
+                </div>
+                <div class="metric-box" style="border-left: 5px solid red;">
+                    <div>
+                        <div class="metric-value-num">2</div>
+                        <div class="metric-label-txt">Valores Negativos Detectados</div>
+                    </div>
+                    <div class="metric-icon-wrapper"><i class="fa-solid fa-arrow-down-wide-short"></i></div>
+                </div>
+                <div class="metric-box" style="border-left: 5px solid orange;">
+                    <div>
+                        <div class="metric-value-num">2</div>
+                        <div class="metric-label-txt">Filas Duplicadas en Origen</div>
+                    </div>
+                    <div class="metric-icon-wrapper"><i class="fa-solid fa-clone"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA 6: TICKETS SIN RESOLVER -->
+        <div id="view-sinresolver" class="view-section">
+            <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem;"><i class="fa-solid fa-triangle-exclamation text-muted"></i> Incidentes Activos Sin Resolver</h2>
+            <div class="table-panel">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID_Ticket</th>
+                            <th>Área Afectada</th>
+                            <th>Descripción del Fallo</th>
+                            <th>Estado Actual</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>INC-2026-0002</td>
+                            <td>Redes Perimetrales</td>
+                            <td>Usuarios reportan desconexión intermitente en la VPN corporativa.</td>
+                            <td style="color: red; font-weight: 700;">Abierto</td>
+                        </tr>
+                        <tr>
+                            <td>N/D</td>
+                            <td>N/D</td>
+                            <td>N/D</td>
+                            <td>N/D</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- VISTA 7: TOTAL TICKETS RESUELTOS -->
+        <div id="view-resueltos" class="view-section">
+            <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem;"><i class="fa-solid fa-circle-check text-muted"></i> Historial de Cierre de Casos</h2>
+            <div class="metric-box" style="max-width: 350px; background-color: var(--color-secundario);">
+                <div>
+                    <div class="metric-value-num">161,617</div>
+                    <div class="metric-label-txt">Total de tickets resueltos / procesados</div>
+                </div>
+                <div class="metric-icon-wrapper" style="background-color: var(--color-acento);"><i class="fa-solid fa-chart-line"></i></div>
+            </div>
+        </div>
+
+        <!-- VISTA 8: SLA -->
+        <div id="view-sla" class="view-section">
+            <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem;"><i class="fa-solid fa-business-time text-muted"></i> Acuerdos de Nivel de Servicio (SLA)</h2>
+            <div class="table-panel" style="max-width: 600px;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Prioridad SLA</th>
+                            <th>Tiempo Máximo de Respuesta</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Alta Priority</td>
+                            <td>15 Minutos (Compromiso Crítico)</td>
+                        </tr>
+                        <tr>
+                            <td>Media</td>
+                            <td>N/D</td>
+                        </tr>
+                        <tr>
+                            <td>Baja</td>
+                            <td>N/D</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- VISTA 9: UBICACIÓN -->
+        <div id="view-ubicacion" class="view-section">
+            <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem;"><i class="fa-solid fa-map-location-dot text-muted"></i> Ubicación Geográfica del Centro de Control</h2>
+            <div class="map-wrapper-fluid">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1538.965245475887!2d-87.1858802533948!3d14.08585682987893!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8f6fa2d48f000001%3A0x1095945961e5e989!2s2%20Boulevard%20Suyapa%2C%2011101%20Tegucigalpa%2C%20Francisco%20Moraz%C3%A1n!5e0!3m2!1sen!2shn!4v1783392381815!5m2!1sen!2shn" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            </div>
+        </div>
+
+        <!-- VISTA 10: FAQ -->
+        <div id="view-faq" class="view-section">
+            <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem;"><i class="fa-solid fa-circle-question text-muted"></i> Preguntas Frecuentes (FAQ)</h2>
+            <div class="faq-accordion-block">
+                <div class="faq-item">
+                    <button class="faq-header-trigger" onclick="toggleAccordion(this)">¿Cuál es el objetivo de este dashboard? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="faq-panel-body"><p>Proporcionar un control integral de los inventarios del equipo técnico y optimizar la trazabilidad y flujo de resolución de los tickets de la Mesa de Servicios.</p></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-header-trigger" onclick="toggleAccordion(this)">¿A quién va dirigido el congreso y evento? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="faq-panel-body"><p>Está dirigido exclusivamente a los colaboradores institucionales internos para mitigar errores de control y asignación.</p></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-header-trigger" onclick="toggleAccordion(this)">¿Cuáles son los canales de contacto oficiales? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="faq-panel-body"><p>Puede comunicarse vía telefónica al 50489900088 o remitiendo un correo electrónico institucional a osman.mejia@gmail.com.</p></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-header-trigger" onclick="toggleAccordion(this)">¿Cómo se audita la calidad de los datos del Help Desk? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="faq-panel-body"><p>El sistema cuenta con métricas integradas para validar y reportar filas duplicadas, nulos y llaves huérfanas estructurales.</p></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-header-trigger" onclick="toggleAccordion(this)">¿Qué costo o valor de inscripción tiene el evento? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="faq-panel-body"><p>El costo del evento no ha sido especificado en la información proporcionada. Te recomendamos contactar a los organizadores por WhatsApp para confirmar este dato.</p></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-header-trigger" onclick="toggleAccordion(this)">¿Hay disponibilidad de parqueo vehicular? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="faq-panel-body"><p>La disponibilidad de parqueo no ha sido detallada en la información oficial provista.</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA 11: CONTACTO / FORMULARIO -->
+        <div id="view-contacto" class="view-section">
+            <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem;"><i class="fa-solid fa-envelope text-muted"></i> Formulario de contacto para el Help desk</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Levantamiento y registro asíncrono de incidencias de TI conectadas a Google Sheets.</p>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 2rem; items-start: flex-start;">
+                <!-- Caja de Formulario -->
+                <div class="form-container-box">
+                    <form id="ticketForm" onsubmit="submitFormIncident(event)">
+                        <div class="form-grid-layout">
+                            <div class="form-field-group">
+                                <label>ID Ticket</label>
+                                <input type="text" id="ID_Ticket" placeholder="Ej: INC-102" required class="form-input-ctrl">
+                            </div>
+                            <div class="form-field-group">
+                                <label>Fecha Hora</label>
+                                <input type="datetime-local" id="Fecha_Hora" required class="form-input-ctrl">
+                            </div>
+                        </div>
+                        <div class="form-grid-layout">
+                            <div class="form-field-group">
+                                <label>Nombre Colaborador</label>
+                                <input type="text" id="Nombre_Colaborador" required class="form-input-ctrl">
+                            </div>
+                            <div class="form-field-group">
+                                <label>Correo Institucional</label>
+                                <input type="email" id="Correo_Institucional" required class="form-input-ctrl">
+                            </div>
+                        </div>
+                        <div class="form-grid-layout">
+                            <div class="form-field-group">
+                                <label>Área TI</label>
+                                <select id="Area_TI" class="form-input-ctrl">
+                                    <option value="Infraestructura Nube">Infraestructura Nube</option>
+                                    <option value="Servidores Locales">Servidores Locales</option>
+                                    <option value="Redes Perimetrales">Redes Perimetrales</option>
+                                    <option value="Soporte Endpoint">Soporte Endpoint</option>
+                                </select>
+                            </div>
+                            <div class="form-field-group">
+                                <label>Prioridad SLA</label>
+                                <select id="Prioridad_SLA" class="form-input-ctrl">
+                                    <option value="Baja">Baja</option>
+                                    <option value="Media">Media</option>
+                                    <option value="Alta">Alta</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-grid-layout">
+                            <div class="form-field-group">
+                                <label>Estado</label>
+                                <select id="Estado" class="form-input-ctrl">
+                                    <option value="Abierto">Abierto</option>
+                                    <option value="En Progreso">En Progreso</option>
+                                    <option value="Resuelto">Resuelto</option>
+                                </select>
+                            </div>
+                            <div class="form-field-group">
+                                <label>Técnico Asignado</label>
+                                <input type="text" id="Tecnico_Asignado" value="Hilton Hopkinson" class="form-input-ctrl">
+                            </div>
+                        </div>
+                        <div class="form-grid-layout">
+                            <div class="form-field-group">
+                                <label>Tiempo Resolución (Min)</label>
+                                <input type="number" id="Tiempo_Resolucion_Min" value="0" class="form-input-ctrl">
+                            </div>
+                        </div>
+                        <div class="form-field-group full-width" style="margin-bottom: 1.5rem;">
+                            <label>Descripción Técnica</label>
+                            <textarea id="Descripcion_Tecnica" rows="3" required class="form-input-ctrl" style="resize: none;"></textarea>
+                        </div>
+                        
+                        <button type="submit" id="formSubmitBtn" class="btn btn-primary" style="width: 100%; justify-content: center;">Contacta a soporte</button>
+                    </form>
+                    <div id="formFeedback" style="margin-top: 1rem; display: none; padding: 1rem; border-radius: 8px; font-weight: 600; text-align: center;"></div>
+                </div>
+
+                <!-- Detalles de Contacto Lateral -->
+                <div class="premium-card" style="padding: 2rem; max-width: 320px; width: 100%; height: fit-content; gap: 1rem;">
+                    <h3 style="font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Canales Directos</h3>
+                    <p style="font-size: 0.85rem;"><i class="fa-solid fa-phone text-muted" style="margin-right: 0.5rem;"></i> <strong>Teléfono:</strong> 50489900088</p>
+                    <p style="font-size: 0.85rem;"><i class="fa-solid fa-envelope text-muted" style="margin-right: 0.5rem;"></i> <strong>Correo:</strong> osman.mejia@gmail.com</p>
+                    <p style="font-size: 0.85rem;"><i class="fa-solid fa-location-dot text-muted" style="margin-right: 0.5rem;"></i> <strong>Dirección:</strong> Boulevard Morazan</p>
+                    <a href="https://www.linkedin.com/in/osman-mejia-msc-161b0a1b3/" target="_blank" class="btn btn-primary" style="background-color: var(--color-primario); color: white; justify-content: center; font-size: 0.8rem;"><i class="fa-brands fa-linkedin"></i> Perfil LinkedIn</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER CORPORATIVO -->
+        <footer class="portal-footer">
+            <p>Dashboard de control Para Help Desk — Google Sheet ID: 1hRAE3KOZ0L3iQDaz-5eF0spMoQjqtO6_MG47AVm5I5A</p>
+            <p style="font-size: 0.75rem; margin-top: 0.25rem;">© 2026 Entorno de Mesa de Servicios e Infraestructura Tecnológica. Todos los derechos reservados.</p>
+        </footer>
+    </main>
+
+    <!-- ==========================================
+       CAPA FLOTANTE: WHATSAPP Y CHATBOT CORPORATIVO
+       ========================================== -->
+    <div class="floating-layer-panel">
+        
+        <!-- Chatbot Ventana Interactiva -->
+        <div class="chatbot-container-window" id="chatboxWindow">
+            <div class="chat-header-banner">
+                <div class="chat-header-profile">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>Asistente IA</span>
+                </div>
+                <div class="chat-ctrl-actions">
+                    <button onclick="clearChatLog()" title="Limpiar"><i class="fa-solid fa-broom"></i></button>
+                    <button onclick="toggleChatWindow()" title="Minimizar"><i class="fa-solid fa-minus"></i></button>
+                </div>
+            </div>
+            
+            <div class="chat-log-box" id="chatLog">
+                <div class="chat-bubble-msg bot">
+                    Hola, soy tu Asistente IA de la Mesa de Servicios. ¿En qué puedo guiarte hoy respecto al congreso o control técnico?
+                </div>
+                <div class="typing-indicator-node" id="chatTyping">Asistente IA está escribiendo...</div>
+            </div>
+
+            <!-- Chips de Respuestas Rápidas Sugeridas -->
+            <div class="chat-chips-scroll">
+                <button class="suggested-chip-btn" onclick="sendSuggestedQuery('¿Cuál es la agenda?')">📅 Agenda</button>
+                <button class="suggested-chip-btn" onclick="sendSuggestedQuery('¿Dónde será?')">📍 Lugar</button>
+                <button class="suggested-chip-btn" onclick="sendSuggestedQuery('Conferencistas')">🎤 Conferencistas</button>
+                <button class="suggested-chip-btn" onclick="sendSuggestedQuery('¿Cómo me inscribo?')">📝 Registro</button>
+                <button class="suggested-chip-btn" onclick="sendSuggestedQuery('¿Habrá parqueo?')">🚗 Parqueo</button>
+                <button class="suggested-chip-btn" onclick="sendSuggestedQuery('¿Entregan certificado?')">🏆 Certificado</button>
+                <button class="suggested-chip-btn" onclick="sendSuggestedQuery('¿Tiene costo?')">💲 Costo</button>
+                <button class="suggested-chip-btn" onclick="sendSuggestedQuery('Contacto')">📞 Contacto</button>
+            </div>
+
+            <div class="chat-input-row">
+                <input type="text" id="chatUserField" placeholder="Escribe tu pregunta aquí..." class="chat-input-ctrl" onkeydown="if(event.key === 'Enter') sendFreeMessageBot()">
+                <button class="chat-send-action-btn" onclick="sendFreeMessageBot()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+        <!-- Activador Chatbot Corporativo -->
+        <button class="floating-trigger-btn btn-bot-corporate" onclick="toggleChatWindow()" title="Asistente IA">
+            <i class="fa-solid fa-robot"></i>
+        </button>
+
+        <!-- Botón Oficial de WhatsApp Flotante -->
+        <a href="https://wa.me/50493081124?text=Hola.%0ANecesito%20ayuda%0AArtificial%202026." target="_blank" class="floating-trigger-btn btn-wa-official" title="Soporte WhatsApp">
+            <i class="fa-brands fa-whatsapp"></i>
+        </a>
+    </div>
+
+    <!-- MODAL PREMIUM PARA DETALLES DE FOTOGRAFÍAS -->
+    <div class="modal-overlay-backdrop" id="staffModal">
+        <div class="modal-body-container">
+            <div class="modal-header-panel">
+                <h3 id="modalStaffName" style="font-weight: 700;">Detalle</h3>
+                <button onclick="closeStaffModal()" style="background:transparent; border:none; font-size:1.25rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-content-inner">
+                <img src="" id="modalStaffImg" class="modal-expanded-pic" alt="Fotografía Ampliada">
+                <p style="font-size: 0.85rem; font-weight: 700; color: var(--color-primario); text-transform: uppercase; margin-bottom: 0.5rem;" id="modalStaffDept">Departamento</p>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">Segmento validado dentro del control lógico de la Mesa de Servicios e Infraestructura.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+       7. LOGICA DE CONTROL JAVASCRIPT (SPA ROUTING & FETCH)
+       ========================================== -->
+    <script>
+        /* CONSTANTE OBLIGATORIA DEL APPS SCRIPT */
+        const WEB_APP_URL = "PEGAR_AQUI_URL_DEL_APPS_SCRIPT";
+
+        // Enrutador Interno de Vistas SPA
+        function navigateTo(viewId) {
+            // Desactivar todas las vistas
+            document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
+            // Quitar clase active del menú
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+            
+            // Activar vista seleccionada
+            const targetView = document.getElementById(`view-${viewId}`);
+            if(targetView) targetView.classList.add('active');
+            
+            // Activar botón del menú correspondiente
+            const targetMenuBtn = document.getElementById(`btn-${viewId}`);
+            if(targetMenuBtn) targetMenuBtn.classList.add('active');
+
+            // Scroll suave hacia arriba
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Accordion FAQ Handler
+        function toggleAccordion(element) {
+            const panel = element.nextElementSibling;
+            const icon = element.querySelector('i');
+            
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+                icon.className = "fa-solid fa-chevron-down";
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+                icon.className = "fa-solid fa-chevron-up";
+            }
+        }
+
+        // Modal Staff Controles
+        function openStaffModal(imgSrc, deptName) {
+            document.getElementById('modalStaffImg').src = imgSrc;
+            document.getElementById('modalStaffDept').textContent = "Segmento: " + deptName;
+            document.getElementById('staffModal').style.display = "flex";
+        }
+
+        function closeStaffModal() {
+            document.getElementById('staffModal').style.display = "none";
+        }
+
+        // Chatbot Ventana Toggles
+        function toggleChatWindow() {
+            const win = document.getElementById('chatboxWindow');
+            win.style.display = (win.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        function clearChatLog() {
+            const log = document.getElementById('chatLog');
+            log.innerHTML = `<div class="chat-bubble-msg bot">Conversación reiniciada. ¿En qué te puedo colaborar de la Mesa de Servicios?</div>`;
+        }
+
+        // Lógica de Respuestas Inteligente del Chatbot
+        function sendSuggestedQuery(text) {
+            appendChatBubble(text, 'user');
+            processBotReply(text);
+        }
+
+        function sendFreeMessageBot() {
+            const field = document.getElementById('chatUserField');
+            const text = field.value.trim();
+            if(!text) return;
+            appendChatBubble(text, 'user');
+            field.value = '';
+            processBotReply(text);
+        }
+
+        function appendChatBubble(text, sender) {
+            const log = document.getElementById('chatLog');
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble-msg ${sender}`;
+            bubble.textContent = text;
+            log.appendChild(bubble);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function processBotReply(query) {
+            const typing = document.getElementById('chatTyping');
+            typing.style.display = 'block';
+            
+            setTimeout(() => {
+                typing.style.display = 'none';
+                const lower = query.toLowerCase();
+                let answer = "";
+
+                if(lower.includes('agenda') || lower.includes('cronograma')) {
+                    answer = "La agenda del evento incluye temas clave como el 'Diagnóstico Inicial y Análisis Exploratorio (EDA)' a las 08:00 AM, seguido por el bloque de 'Integración Asíncrona con API de Google Sheets' a las 10:00 AM. Puedes ver el cronograma completo en la pestaña Historico de tickets.";
+                } else if(lower.includes('lugar') || lower.includes('donde')) {
+                    answer = "El lugar del evento está registrado como N/D en la información oficial. Le sugerimos revisar la sección de Ubicación o contactarnos por WhatsApp para asistencia.";
+                } else if(lower.includes('conferencista')) {
+                    answer = "El evento cuenta con expositores especialistas como Osman Mejía (Coordinador TI) e Hilton Hopkinson (Administrador de Redes). El detalle completo está disponible en la pantalla de Inicio.";
+                } else if(lower.includes('certificado')) {
+                    answer = "La entrega de certificados de asistencia no cuenta con detalles específicos en el registro provisto para el evento.";
+                } else if(lower.includes('parqueo')) {
+                    answer = "La disponibilidad de parqueo vehicular no ha sido detallada en la información oficial proporcionada.";
+                } else if(lower.includes('inscribo') || lower.includes('registro')) {
+                    answer = "Puedes registrarte de forma inmediata navegando a la pestaña de 'Contacto' en la barra de navegación lateral, completando el formulario obligatorio.";
+                } else if(lower.includes('contacto') || lower.includes('correo') || lower.includes('telefono')) {
+                    answer = "Puedes contactarnos directamente llamando al teléfono 50489900088 o remitiendo un correo electrónico a osman.mejia@gmail.com.";
+                } else if(lower.includes('horario')) {
+                    answer = "Las conferencias inician a partir de las 08:00 AM. Consulta la sección de agenda para verificar el desglose de los bloques de TI.";
+                } else if(lower.includes('costo') || lower.includes('precio') || lower.includes('valor')) {
+                    answer = "El costo del evento no ha sido especificado en la información proporcionada. Te recomendamos contactar a los organizadores por WhatsApp para confirmar este dato.";
+                } else {
+                    answer = "Comprendo tu solicitud sobre la Mesa de Servicios. Para asistencia personalizada o dudas no listadas, te sugerimos canalizar la consulta a través de nuestro botón oficial de WhatsApp o en la sección de Contacto.";
+                }
+
+                appendChatBubble(answer, 'bot');
+            }, 800);
+        }
+
+        // Envío asíncrono del Formulario mediante Fetch API hacia Google Sheets
+        async function submitFormIncident(event) {
+            event.preventDefault();
+            const btn = document.getElementById('formSubmitBtn');
+            const feedback = document.getElementById('formFeedback');
+            
+            btn.disabled = true;
+            btn.textContent = "Procesando...";
+            feedback.style.display = 'none';
+
+            // Estructuración exacta del objeto JSON con los 10 campos requeridos
+            const dataPayload = {
+                ID_Ticket: document.getElementById('ID_Ticket').value,
+                Fecha_Hora: document.getElementById('Fecha_Hora').value,
+                Nombre_Colaborador: document.getElementById('Nombre_Colaborador').value,
+                Correo_Institucional: document.getElementById('Correo_Institucional').value,
+                Area_TI: document.getElementById('Area_TI').value,
+                Prioridad_SLA: document.getElementById('Prioridad_SLA').value,
+                Estado: document.getElementById('Estado').value,
+                Descripcion_Tecnica: document.getElementById('Descripcion_Tecnica').value,
+                Tecnico_Asignado: document.getElementById('Tecnico_Asignado').value,
+                Tiempo_Resolucion_Min: document.getElementById('Tiempo_Resolucion_Min').value
+            };
+
+            if(WEB_APP_URL === "PEGAR_AQUI_URL_DEL_APPS_SCRIPT") {
+                feedback.style.backgroundColor = "rgba(255, 0, 0, 0.1)";
+                feedback.style.color = "red";
+                feedback.innerHTML = "Error técnico: URL de Web App no configurada aún en index.html. Simulación local exitosa.";
+                feedback.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = "Contacta a soporte";
+                return;
+            }
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Evita bloqueos de políticas de origen cruzado de Google
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataPayload)
+                });
+
+                feedback.style.backgroundColor = "rgba(122, 146, 102, 0.1)";
+                feedback.style.color = "var(--color-primario)";
+                feedback.innerHTML = "✅ Gracias. Tu inscripción fue registrada exitosamente.";
+                feedback.style.display = 'block';
+                document.getElementById('ticketForm').reset();
+            } catch (error) {
+                feedback.style.backgroundColor = "rgba(255, 0, 0, 0.1)";
+                feedback.style.color = "red";
+                feedback.innerHTML = "Ocurrió un inconveniente al registrar el incidente. Por favor, inténtalo de nuevo.";
+                feedback.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Contacta a soporte";
+            }
+        }
+    </script>
+</body>
+</html>
